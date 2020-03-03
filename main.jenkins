@@ -1,0 +1,24 @@
+#!groovy
+// Run docker build
+
+properties([disableConcurrentBuilds()])
+
+pipeline {
+    agent { 
+        label 'master'
+        }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '1', artifactNumToKeepStr: '1'))
+        timestamps()
+    }
+    stages {
+        stage("test linter") {
+            steps {
+                echo " ============== start testing linter =================="
+                        sh """./testlinter.sh
+                    	"""
+ 		
+            }
+        }
+    }
+}
