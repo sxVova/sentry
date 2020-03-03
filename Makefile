@@ -219,7 +219,7 @@ travis-noop:
 	@echo "nothing to do here."
 
 .PHONY: travis-test-lint
-travis-test-lint: lint-python lint-js
+travis-test-lint: lint-python #lint-js
 
 .PHONY: travis-test-postgres travis-test-acceptance travis-test-snuba travis-test-symbolicator travis-test-js travis-test-cli
 travis-test-postgres: test-python
