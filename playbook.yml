@@ -1,13 +1,15 @@
-
 ---
-- name: "Playing with Ansible and Git"
-  hosts: localhost
-  connection: local
+#- hosts: flask
+#  become: true
+#  gather_facts: no
+#  roles:
+#     - { role: flask_role }
 
-  tasks:
+- hosts: sentry
+  become: true
+  gather_facts: no
+  roles:
+     - { role: sentry_deploy_role }
+     - { role: sentry_monitoring_role }
 
-  - name: "just execute a touch command"
-    shell: "touch hello.txt"
-    register: "output"
-
-  - debug: var=output.stdout_lines
+...
