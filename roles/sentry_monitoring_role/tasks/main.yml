@@ -75,16 +75,19 @@
   shell:
     cmd: docker-compose exec postgres psql -c 'CREATE USER "stack-driver";' -U postgres
     chdir: /home/{{ ansible_user }}/{{ project_name }}
+    ignore_errors: yes
 
 - name: Create db
   shell:
     cmd: docker-compose exec postgres psql -c 'CREATE DATABASE test_db;' -U postgres
     chdir: /home/{{ ansible_user }}/{{ project_name }}
+    ignore_errors: yes
 
 - name: Give grant privileges
   shell:
     cmd: docker-compose exec postgres psql -c 'GRANT ALL PRIVILEGES ON DATABASE test_db
     chdir: /home/{{ ansible_user }}/{{ project_name }}
+    ignore_errors: yes
 
 
 - name: Install "libpq5"
