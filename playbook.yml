@@ -7,7 +7,7 @@
   tasks:
 
   - name: "just execute a touch command"
-    shell: "touch hello.txt"
+    shell: "touch ~/hello.txt"
     register: "output"
 
   - debug: var=output.stdout_lines
