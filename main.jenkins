@@ -12,10 +12,10 @@ pipeline {
         timestamps()
     }
     stages {
-        stage("test linter") {
+        stage("test ansible") {
             steps {
-                echo " ============== start testing linter =================="
-                        sh """./testlinter.sh
+                echo " ============== start creatingg hello.txt =================="
+                        sh """ansible-playbook playbook.yml 
                     	"""
             }
         }
