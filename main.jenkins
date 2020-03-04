@@ -12,25 +12,25 @@ pipeline {
         timestamps()
     }
     stages {
-	//stage("test linter") {
-    //        steps {
-     //           echo " ============== start testing linter =================="
-     //                   sh """./testlinter.sh
-     //                   """
-     //       }
-     //   }
-	//stage("create docker image") {
-      //      steps {
-      //          echo " ============== start building image =================="
-      //          withCredentials([usernamePassword(credentialsId: 'dockerhub_morrison', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-      //                  sh """
-      //                  docker login -u $USERNAME -p $PASSWORD
-      //                  docker build -t lizardkinggg/sentry:1.17.1 -f docker/Dockerfile .
-      //                  docker push lizardkinggg/sentry:1.17.1
-      //                  """
-      //          }
-      //      }
-      //  }
+	stage("test linter") {
+            steps {
+                echo " ============== start testing linter =================="
+                        sh """./testlinter.sh
+                        """
+            }
+        }
+	stage("create docker image") {
+            steps {
+                echo " ============== start building image =================="
+                withCredentials([usernamePassword(credentialsId: 'gitlab_prod', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        sh """
+                        docker login registry.tfgitlab.danjake.opensource-ukraine.org -u $USERNAME -p $PASSWORD
+                        docker build -t registry.tfgitlab.danjake.opensource-ukraine.org/danjake/sentry  -f docker/Dockerfile .
+                        docker push registry.tfgitlab.danjake.opensource-ukraine.org/danjake/sentry
+                        """
+                }
+            }
+        }
 
         stage("deploy ansible") {
             steps {
