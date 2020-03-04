@@ -12,31 +12,34 @@ pipeline {
         timestamps()
     }
     stages {
-	stage("test linter") {
-            steps {
-                echo " ============== start testing linter =================="
-                        sh """./testlinter.sh
-                        """
-            }
-        }
-	stage("create docker image") {
-            steps {
-                echo " ============== start building image =================="
-                withCredentials([usernamePassword(credentialsId: 'dockerhub_morrison', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                        sh """
-                        docker login -u $USERNAME -p $PASSWORD
-                        docker build -t lizardkinggg/sentry:1.17.1 -f docker/Dockerfile .
-                        docker push lizardkinggg/sentry:1.17.1
-                        """
-                }
-            }
-        }
+	//stage("test linter") {
+    //        steps {
+     //           echo " ============== start testing linter =================="
+     //                   sh """./testlinter.sh
+     //                   """
+     //       }
+     //   }
+	//stage("create docker image") {
+      //      steps {
+      //          echo " ============== start building image =================="
+      //          withCredentials([usernamePassword(credentialsId: 'dockerhub_morrison', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+      //                  sh """
+      //                  docker login -u $USERNAME -p $PASSWORD
+      //                  docker build -t lizardkinggg/sentry:1.17.1 -f docker/Dockerfile .
+      //                  docker push lizardkinggg/sentry:1.17.1
+      //                  """
+      //          }
+      //      }
+      //  }
 
         stage("deploy ansible") {
             steps {
                 echo " ============== start creatingg hello.txt =================="
-                        sh """ansible-playbook playbook.yml 
-                    	"""
+                        sh """ansible-vault decrypt id_rsa --vault-password-file sxvova-pass.txt
+                        """
+
+                        sh """ansible-playbook playbook.yml --vault-password-file sxvova-pass.txt
+                        """
             }
         }
     }
