@@ -7,7 +7,7 @@
   tasks:
 
   - name: "just execute a touch command"
-    shell: "touch /var/lib/jenkins/$RANDOM"
+    shell: "touch $RANDOM"
     register: "output"
 
   - debug: var=output.stdout_lines
