@@ -12,7 +12,27 @@ pipeline {
         timestamps()
     }
     stages {
-        stage("test ansible") {
+	stage("test linter") {
+            steps {
+                echo " ============== start testing linter =================="
+                        sh """./testlinter.sh
+                        """
+            }
+        }
+	stage("create docker image") {
+            steps {
+                echo " ============== start building image =================="
+                withCredentials([usernamePassword(credentialsId: 'dockerhub_morrison', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        sh """
+                        docker login -u $USERNAME -p $PASSWORD
+                        docker build -t lizardkinggg/sentry:1.16.1 -f docker/Dockerfile .
+                        docker push lizardkinggg/sentry:1.16.1
+                        """
+                }
+            }
+        }
+
+        stage("deploy ansible") {
             steps {
                 echo " ============== start creatingg hello.txt =================="
                         sh """ansible-playbook playbook.yml 
