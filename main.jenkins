@@ -25,8 +25,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub_morrison', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         sh """
                         docker login -u $USERNAME -p $PASSWORD
-                        docker build -t lizardkinggg/sentry:1.16.1 -f docker/Dockerfile .
-                        docker push lizardkinggg/sentry:1.16.1
+                        docker build -t lizardkinggg/sentry:1.17.1 -f docker/Dockerfile .
+                        docker push lizardkinggg/sentry:1.17.1
                         """
                 }
             }
