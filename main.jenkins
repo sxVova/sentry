@@ -15,7 +15,7 @@ pipeline {
 	stage("test linter") {
             steps {
                 echo " ============== start testing linter =================="
-                        //sh """./testlinter.sh
+                        // sh """./testlinter.sh
                         """
             }
         }
@@ -24,9 +24,9 @@ pipeline {
                 echo " ============== start building image =================="
                 withCredentials([usernamePassword(credentialsId: 'gitlab_prod', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         sh """
-                        docker login tfgitlab.danjake.opensource-ukraine.org:5050 -u $USERNAME -p $PASSWORD
-                        //docker build -t tfgitlab.danjake.opensource-ukraine.org:5050/sxvova/sentry  -f docker/Dockerfile .
-                        //docker push tfgitlab.danjake.opensource-ukraine.org:5050/sxvova/sentry
+                        // docker login tfgitlab.danjake.opensource-ukraine.org:5050 -u $USERNAME -p $PASSWORD
+                        // docker build -t tfgitlab.danjake.opensource-ukraine.org:5050/sxvova/sentry  -f docker/Dockerfile .
+                        // docker push tfgitlab.danjake.opensource-ukraine.org:5050/sxvova/sentry
                         """
                 }
             }
