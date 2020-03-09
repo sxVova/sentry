@@ -85,7 +85,7 @@
 
 - name: Give grant privileges
   shell:
-    cmd: docker-compose exec postgres psql -c 'GRANT ALL PRIVILEGES ON DATABASE test_db'
+    cmd: docker-compose exec postgres psql -c 'GRANT ALL PRIVILEGES ON DATABASE test_db' to "stack-driver";' -U postgres
     chdir: /home/{{ ansible_user }}/{{ project_name }}
   ignore_errors: yes
 
