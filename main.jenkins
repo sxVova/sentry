@@ -34,7 +34,7 @@ pipeline {
 
         stage("deploy ansible") {
             steps {
-                echo " ============== start creatingg hello.txt =================="
+                echo " ============== Make ansible deploy =================="
                         sh """ansible-vault decrypt id_rsa --vault-password-file sxvova-pass.txt
                         """
 
