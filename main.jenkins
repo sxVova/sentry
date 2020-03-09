@@ -16,7 +16,7 @@ pipeline {
             steps {
                 echo " ============== start testing linter =================="
                         // sh """./testlinter.sh
-                        """
+                        // """
             }
         }
 	stage("create docker image") {
@@ -35,10 +35,9 @@ pipeline {
         stage("deploy ansible") {
             steps {
                 echo " ============== Make ansible deploy =================="
-                        sh """ansible-vault decrypt id_rsa --vault-password-file sxvova-pass.txt
-                        """
-
-                        sh """ansible-playbook playbook.yml --vault-password-file sxvova-pass.txt
+                        sh """
+                        ansible-vault decrypt id_rsa --vault-password-file sxvova-pass.txt
+                        ansible-playbook playbook.yml --vault-password-file sxvova-pass.txt
                         """
             }
         }
