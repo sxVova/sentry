@@ -15,8 +15,8 @@ pipeline {
 	stage("test linter") {
             steps {
                 echo " ============== start testing linter =================="
-                         //sh """./testlinter.sh
-                         //"""
+                         sh """./testlinter.sh
+                         """
             }
         }
 	stage("create docker image") {
