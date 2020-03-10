@@ -24,9 +24,9 @@ pipeline {
                 echo " ============== start building image =================="
                 withCredentials([usernamePassword(credentialsId: 'gitlab_prod', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         sh """
-                         # docker login registry.tfgitlab.danjake.opensource-ukraine.org -u $USERNAME -p 11111111
-                         # docker build -t registry.tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry  -f docker/Dockerfile .
-                         # docker push registry.tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry
+                          docker login registry.tfgitlab.danjake.opensource-ukraine.org -u $USERNAME -p 11111111
+                          docker build -t registry.tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry  -f docker/Dockerfile .
+                          docker push registry.tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry
                         """
                 }
             }
