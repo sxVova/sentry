@@ -1,7 +1,7 @@
 ---
 
-registry_url                 : registry.gitlab.danjake.opensource-ukraine.org
-registry_admin               : danjake
+registry_url                 : registry.tfgitlab.danjake.opensource-ukraine.org
+registry_admin               : sxvova
 project_name                 : sentry
 commit_sha                   : latest
 ansible_user                 : rasavo99
