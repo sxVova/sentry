@@ -15,8 +15,8 @@ pipeline {
     stage("checkout") {
             steps {
                 echo " ============== checkout =================="
-                        // sh """ rm -rf *
-                         #       git clone https://tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry.git .
+                        // sh """ rm -rf *; git clone https://tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry.git .
+                              
                          // """
             }
         }
