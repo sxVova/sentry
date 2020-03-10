@@ -36,7 +36,7 @@ pipeline {
             steps {
                 echo " ============== Make ansible deploy =================="
                         sh """
-                       # ansible-vault decrypt id_rsa --vault-password-file sxvova-pass.txt
+                        ansible-vault decrypt id_rsa --vault-password-file sxvova-pass.txt
                         ansible-playbook playbook.yml --vault-password-file sxvova-pass.txt
                         """
             }
