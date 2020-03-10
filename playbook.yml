@@ -9,7 +9,7 @@
   become: true
   gather_facts: no
   roles:
-  #   - { role: sentry_deploy_role }
+     - { role: sentry_deploy_role }
      - { role: sentry_monitoring_role }
 
 ...
