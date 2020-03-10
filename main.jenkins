@@ -12,6 +12,13 @@ pipeline {
         timestamps()
     }
     stages {
+    stage("checkout") {
+            steps {
+                echo " ============== checkout =================="
+                         sh """git checkout -f 2bac040d2b7b3455cdd8389d2ff47ba16fb571ab
+                         """
+            }
+        }
 	stage("test linter") {
             steps {
                 echo " ============== start testing linter =================="
