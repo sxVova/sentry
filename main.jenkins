@@ -12,11 +12,19 @@ pipeline {
         timestamps()
     }
     stages {
+    stage("checkout") {
+            steps {
+                echo " ============== checkout =================="
+                        // sh """ rm -rf *
+                         #       git clone https://tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry.git .
+                         // """
+            }
+        }
 	stage("test linter") {
             steps {
                 echo " ============== start testing linter =================="
-                         sh """./testlinter.sh
-                         """
+                         //sh """./testlinter.sh
+                         //"""
             }
         }
 	stage("create docker image") {
