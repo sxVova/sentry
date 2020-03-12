@@ -12,11 +12,17 @@ pipeline {
         timestamps()
     }
     stages {
+    stage("checkout") {
+            steps {
+                echo " ============== git checkout to the last version =================="
+                        sh """git checkout master
+                        """
+            }
+        }
 	stage("test linter") {
             steps {
                 echo " ============== start testing linter =================="
-                         sh """git checkout master
-                               ./testlinter.sh
+                         sh """./testlinter.sh
                          """
             }
         }
