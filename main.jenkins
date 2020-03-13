@@ -15,15 +15,17 @@ pipeline {
     stage("checkout") {
             steps {
                 echo " ============== git checkout to the last version =================="
-                        sh """git checkout master
-                              cat sxvova-pass.txt
+                        sh """
+                              # cat sxvova-pass.txt
                         """
             }
         }
 	stage("test linter") {
             steps {
                 echo " ============== start testing linter =================="
-                         sh """./testlinter.sh
+                         sh """
+                         git checkout master
+                         ./testlinter.sh
                          """
             }
         }
@@ -32,6 +34,7 @@ pipeline {
                 echo " ============== start building image =================="
                 withCredentials([usernamePassword(credentialsId: 'gitlab_prod', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         sh """
+                          git checkout master
                           docker login registry.tfgitlab.danjake.opensource-ukraine.org -u $USERNAME -p 11111111
                           docker build -t registry.tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry  -f docker/Dockerfile .
                           docker push registry.tfgitlab.danjake.opensource-ukraine.org/sxvova/sentry
@@ -44,6 +47,7 @@ pipeline {
             steps {
                 echo " ============== Make ansible deploy =================="
                         sh """
+                        git checkout master
                         ansible-vault decrypt id_rsa --vault-password-file sxvova-pass.txt
                         ansible-playbook playbook.yml --vault-password-file sxvova-pass.txt
                         """
