@@ -16,6 +16,7 @@ pipeline {
             steps {
                 echo " ============== git checkout to the last version =================="
                         sh """git checkout master
+                              cat sxvova-pass.txt
                         """
             }
         }
