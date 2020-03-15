@@ -1,0 +1,207 @@
+variables:
+  GENERATED_IMG: ${CI_PROJECT_NAME}
+  PROJECT_HOST: sentry.sxvova.opensource-ukraine.org
+  REGISTRY_URL: gitlab.danjake.opensource-ukraine.org:5050
+  REGISTRY: ${REGISTRY_URL}/${CI_PROJECT_NAMESPACE}
+  DEV_PRIVATE_SSH_KEY: ${PR_SSH_KEY}
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/getsentry
+  GIT_COMMIT: $CI_COMMIT_SHA
+  PERCY_PARALLEL_TOTAL: 1
+  NODE_ENV: "development"
+  PIP_DISABLE_PIP_VERSION_CHECK: "on"
+  PIP_QUIET: 1
+  SENTRY_LIGHT_BUILD: 1
+  SENTRY_SKIP_BACKEND_VALIDATION: 1
+  MIGRATIONS_TEST_MIGRATE: 0
+  DJANGO_VERSION: ">=1.11,<1.12"
+  NODE_DIR: "${HOME}/.nvm/versions/node/v$(< .nvmrc)"
+  NODE_OPTIONS: "--max-old-space-size=4096"
+  SMOKE_TEST_HOST:  https://sentry.sxvova.opensource-ukraine.org
+  SMOKE_TEST_URI: /_health/
+  SMOKE_TEST_EXPECTED_STATUS_CODE: 200
+
+stages:
+  - test
+  - build
+  - deploy
+  - smoke_test
+
+before_script:
+  - bash
+  - cd $GIT_CLONE_PATH
+  - git checkout -qf $CI_COMMIT_SHA
+  - nvm install
+  - source ~/virtualenv/python2.7/bin/activate
+after_script:
+  - rm -rf ~/.sentry
+  - echo "I work"
+
+Linter:
+  stage: test
+  variables:
+    TEST_SUITE: lint
+  script:
+    - python setup.py install_egg_info
+    - SENTRY_LIGHT_BUILD=1 pip install -U -e ".[dev]"
+    - nvm install
+    - ./bin/yarn install --pure-lockfile
+    - make gitlab-test-$TEST_SUITE
+    - make gitlab-scan-$TEST_SUITE
+  only:
+    - master
+
+distribution-build:
+  stage: test
+  variables:
+    TEST_SUITE: dist
+  script:
+    - pip install --no-cache-dir "pip>=20.0.2"
+    - make gitlab-test-$TEST_SUITE
+    - nvm install
+  only:
+    - master
+Frontend:
+  stage: test
+  variables:
+    TEST_SUITE: js
+  script:
+    - pip install --no-cache-dir "pip>=20.0.2"
+    - nvm install
+    - ./bin/yarn install --pure-lockfile
+    - make gitlab-test-$TEST_SUITE
+    - make gitlab-scan-$TEST_SUITE
+  only:
+    - master
+
+Snuba_Integration_with_migrations:
+  stage: test
+  variables:
+    TEST_SUITE: snuba
+    USE_SNUBA: 1
+    SENTRY_ZOOKEEPER_HOSTS: localhost:2181
+    SENTRY_KAFKA_HOSTS: localhost:9092
+    MIGRATIONS_TEST_MIGRATE: 1
+  before_script:
+    - pip install --no-cache-dir "pip>=20.0.2"
+    - docker run -d --network host --name zookeeper -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper:4.1.0
+    - docker run -d --network host --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server:19.11
+    - docker run -d --network host --name kafka -e KAFKA_ZOOKEEPER_CONNECT=localhost:2181 -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 confluentinc/cp-kafka:4.1.0
+    - docker run -d --network host --name snuba --env SNUBA_SETTINGS=test --env CLICKHOUSE_SERVER=localhost:9000 getsentry/snuba
+    - docker ps -a
+    - source ~/virtualenv/python2.7/bin/activate
+    - psql -c 'create database sentry;' -U postgres
+  script:
+    - python setup.py install_egg_info
+    - pip install -U -e ".[dev]"
+    - nvm install
+    - make gitlab-test-$TEST_SUITE
+    - make gitlab-scan-$TEST_SUITE
+  after_script:
+    - docker stop clickhouse-server snuba kafka zookeeper
+    - docker rm clickhouse-server snuba kafka zookeeper
+    - psql -c 'drop database sentry;' -U postgres
+  only:
+    - master
+
+Command Line:
+  stage: test
+  variables:
+    TEST_SUITE: cli
+  before_script:
+    - pip install --no-cache-dir "pip>=20.0.2"
+    - source ~/virtualenv/python2.7/bin/activate
+    - python setup.py install_egg_info
+    - pip install -U -e .
+    - psql -c 'create database sentry;' -U postgres
+  script:
+    - make gitlab-test-$TEST_SUITE
+    - make gitlab-scan-$TEST_SUITE
+  after_script:
+    - psql -c 'drop database sentry;' -U postgres
+  only:
+    - master
+
+Plugins:
+  stage: test
+  variables:
+    TEST_SUITE: plugins
+    DB: postgres
+    PERCY_TOKEN: ${PLUGIN_PERCY_TOKEN}
+  before_script:
+    - pip install --no-cache-dir "pip>=20.0.2"
+    - nvm install
+    - docker run -d --network host --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server:19.11
+    - docker run -d --network host --name snuba --env SNUBA_SETTINGS=test --env CLICKHOUSE_SERVER=localhost:9000 getsentry/snuba
+    - docker ps -a
+    - source ~/virtualenv/python2.7/bin/activate
+    - ./bin/yarn install --pure-lockfile
+    - python setup.py install_egg_info
+    - pip install -U -e ".[dev]"
+    - psql -c 'create database sentry;' -U postgres
+  script:
+    - make gitlab-test-$TEST_SUITE
+    - make gitlab-scan-$TEST_SUITE
+  after_script:
+    - docker stop clickhouse-server snuba
+    - docker rm clickhouse-server snuba
+    - psql -c 'drop database sentry;' -U postgres
+  only:
+    - master
+
+Backend_with_migrations_[Postgres]:
+  stage: test
+  variables:
+    TEST_SUITE: postgres
+    DB: postgres
+    TOTAL_TEST_GROUPS: 2
+    TEST_GROUP: 1
+    MIGRATIONS_TEST_MIGRATE: 1
+  before_script:
+    - pip install --no-cache-dir "pip>=20.0.2"
+    - docker run -d --network host --name clickhouse-server --ulimit nofile=262144:262144 yandex/clickhouse-server:19.11
+    - docker run -d --network host --name snuba --env SNUBA_SETTINGS=test --env CLICKHOUSE_SERVER=localhost:9000 getsentry/snuba
+    - docker ps -a
+    - source ~/virtualenv/python2.7/bin/activate
+    - python setup.py install_egg_info
+    - pip install -U -e ".[dev]"
+    - psql -c 'create database sentry;' -U postgres
+  script:
+    - make gitlab-test-$TEST_SUITE
+    - make gitlab-scan-$TEST_SUITE
+  after_script:
+    - docker stop clickhouse-server snuba
+    - docker rm clickhouse-server snuba
+    - psql -c 'drop database sentry;' -U postgres
+  only:
+    - master
+
+build-docker-image:
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN ${REGISTRY_URL}
+    - echo "10.16.3" > .nvmrc
+    - docker build -t ${REGISTRY}/${GENERATED_IMG}:$(echo $CI_COMMIT_SHA | cut -c -8 ) -f docker/Dockerfile .
+    - docker push ${REGISTRY}/${GENERATED_IMG}:$(echo $CI_COMMIT_SHA | cut -c -8 )
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    - eval $(ssh-agent -s)
+    - echo "$DEV_PRIVATE_SSH_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan ${PROJECT_HOST} >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - ssh gitlab-runner@${PROJECT_HOST} "bash /home/gitlab-runner/${CI_PROJECT_NAMESPACE}/onpremise/install.sh ${CI_PROJECT_NAMESPACE} ${CI_PROJECT_NAME} ${CI_COMMIT_SHA} ${CI_BUILD_TOKEN} ${REGISTRY_URL}"
+  only:
+    - master
+
+smoke_test:
+  stage: smoke_test
+  script:
+    - "[[ $(curl -I $SMOKE_TEST_HOST$SMOKE_TEST_URI 2>/dev/null | head -n 1 | cut -d$' ' -f2) == *$SMOKE_TEST_EXPECTED_STATUS_CODE* ]] || exit 1"
+  only:
+    - master
